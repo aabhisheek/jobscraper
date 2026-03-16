@@ -1,0 +1,53 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-commit.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/on-bash-complete.sh \"$TOOL_INPUT\" \"$TOOL_OUTPUT\" \"$EXIT_CODE\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/on-notification.sh \"$NOTIFICATION_TITLE\" \"$NOTIFICATION_BODY\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git branch*)",
+      "Bash(gh pr view*)",
+      "Bash(gh issue view*)",
+      "Bash(pnpm exec vitest*)",
+      "Bash(pnpm exec eslint*)",
+      "Bash(pnpm exec prettier*)",
+      "Bash(pnpm exec tsc*)",
+      "Bash(pnpm exec prisma format*)",
+      "Bash(pnpm exec prisma validate*)"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "id": 12345,
+      "title": "Senior Software Engineer, Backend",
+      "updated_at": "2026-03-10T12:00:00Z",
+      "absolute_url": "https://boards.greenhouse.io/testco/jobs/12345",
+      "location": { "name": "San Francisco, CA" },
+      "content": "<p>We are looking for a <strong>Senior Software Engineer</strong> to join our backend team.</p><h3>Requirements</h3><ul><li>5+ years experience with TypeScript and Node.js</li><li>Experience with PostgreSQL and Redis</li><li>Familiarity with Docker and Kubernetes</li><li>Experience building REST APIs</li></ul><h3>Nice to have</h3><ul><li>Experience with AWS</li><li>Knowledge of GraphQL</li></ul>",
+      "departments": [{ "name": "Engineering" }]
+    },
+    {
+      "id": 12346,
+      "title": "Frontend Engineer",
+      "updated_at": "2026-03-09T10:00:00Z",
+      "absolute_url": "https://boards.greenhouse.io/testco/jobs/12346",
+      "location": { "name": "Remote" },
+      "content": "<p>Join our frontend team! We use React, TypeScript, and Tailwind CSS.</p><ul><li>2+ years experience with React</li><li>Strong JavaScript/TypeScript skills</li><li>CSS and HTML proficiency</li></ul>",
+      "departments": [{ "name": "Engineering" }]
+    },
+    {
+      "id": 12347,
+      "title": "Data Engineer",
+      "updated_at": "2026-03-08T08:00:00Z",
+      "absolute_url": "https://boards.greenhouse.io/testco/jobs/12347",
+      "location": { "name": "NYC" },
+      "content": "<p>Looking for a data engineer experienced in Python, Spark, and Airflow. Knowledge of SQL and BigQuery preferred.</p>",
+      "departments": [{ "name": "Data" }]
+    }
+  ]
+}

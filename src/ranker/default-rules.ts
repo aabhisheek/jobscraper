@@ -1,0 +1,43 @@
+import type { RankingRules } from '../common/types.js';
+
+export const DEFAULT_RULES: RankingRules = {
+  titleKeywords: [
+    'backend',
+    'software engineer',
+    'developer',
+    'full stack',
+    'fullstack',
+    'platform',
+    'infrastructure',
+    'sre',
+    'devops',
+  ],
+  desiredSkills: [
+    'typescript',
+    'javascript',
+    'node',
+    'python',
+    'go',
+    'react',
+    'postgresql',
+    'redis',
+    'docker',
+    'kubernetes',
+    'aws',
+  ],
+  preferRemote: true,
+  targetCompanies: [
+    'stripe',
+    'notion',
+    'vercel',
+    'cloudflare',
+    'discord',
+    'figma',
+    'shopify',
+    'coinbase',
+    'netlify',
+    'openai',
+  ],
+  maxExperienceYears: 3,
+  minimumScore: 8,
+};

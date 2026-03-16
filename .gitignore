@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env
+
+# Coverage
+coverage/
+.vitest/
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Resume and profile (contain personal data)
+resume/*.pdf
+profile/profile.json
+
+# Logs
+*.log
+
+# Playwright
+test-results/
+playwright-report/

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-test-build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: jobpilot
+          POSTGRES_PASSWORD: jobpilot
+          POSTGRES_DB: jobpilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U jobpilot"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec prisma generate
+
+      - run: pnpm exec eslint . --max-warnings 0
+
+      - run: pnpm exec prettier --check .
+
+      - name: Run migrations
+        run: pnpm exec prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://jobpilot:jobpilot@localhost:5432/jobpilot?schema=public
+
+      - run: pnpm exec vitest run
+        env:
+          DATABASE_URL: postgresql://jobpilot:jobpilot@localhost:5432/jobpilot?schema=public
+          REDIS_URL: redis://localhost:6379
+
+      - run: pnpm exec tsc --build

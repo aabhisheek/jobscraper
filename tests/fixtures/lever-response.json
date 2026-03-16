@@ -1,0 +1,47 @@
+[
+  {
+    "id": "abc-123-def",
+    "text": "Backend Engineer",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Engineering",
+      "location": "Remote",
+      "team": "Platform"
+    },
+    "description": "<p>We're looking for a backend engineer to help build our platform.</p>",
+    "descriptionPlain": "We're looking for a backend engineer to help build our platform.",
+    "lists": [
+      {
+        "text": "Requirements",
+        "content": "<li>Strong experience with Go or Python</li><li>Experience with PostgreSQL and Redis</li><li>Familiarity with Docker and Kubernetes</li>"
+      },
+      {
+        "text": "Nice to have",
+        "content": "<li>Experience with Kafka or RabbitMQ</li><li>AWS or GCP experience</li>"
+      }
+    ],
+    "hostedUrl": "https://jobs.lever.co/testco/abc-123-def",
+    "applyUrl": "https://jobs.lever.co/testco/abc-123-def/apply",
+    "createdAt": 1710000000000
+  },
+  {
+    "id": "xyz-789-uvw",
+    "text": "Senior Frontend Developer",
+    "categories": {
+      "commitment": "Full-time",
+      "department": "Engineering",
+      "location": "San Francisco"
+    },
+    "description": "<p>Join our frontend team building with React and TypeScript.</p>",
+    "descriptionPlain": "Join our frontend team building with React and TypeScript.",
+    "lists": [
+      {
+        "text": "What you'll do",
+        "content": "<li>Build and maintain our React-based dashboard</li><li>Work with our design team on new features</li>"
+      }
+    ],
+    "hostedUrl": "https://jobs.lever.co/testco/xyz-789-uvw",
+    "applyUrl": "https://jobs.lever.co/testco/xyz-789-uvw/apply",
+    "createdAt": 1709900000000
+  }
+]
