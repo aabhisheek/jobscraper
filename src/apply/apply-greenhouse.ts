@@ -100,8 +100,8 @@ export class GreenhouseApplyBot implements ApplyBot {
 
       await randomDelay(2000, 5000);
 
-      // Scroll down to reveal submit button
-      await scrollSlowly(page, 800);
+      // Scroll all the way to bottom to ensure lazy-loaded content is rendered
+      await this.scrollToBottom(page);
       await randomDelay(1000, 2000);
 
       // Find submit button
@@ -185,22 +185,49 @@ export class GreenhouseApplyBot implements ApplyBot {
     log.debug({ labelText }, 'Field not found — skipping');
   }
 
+  private async scrollToBottom(page: Page): Promise<void> {
+    let previousHeight = 0;
+    for (let i = 0; i < 20; i++) {
+      const currentHeight = await page.evaluate('document.body.scrollHeight') as number;
+      if (currentHeight === previousHeight) break;
+      previousHeight = currentHeight;
+      await page.evaluate('window.scrollBy(0, 500)');
+      await randomDelay(300, 600);
+    }
+    // Scroll back to top so we can work with the full page
+    await page.evaluate('window.scrollTo(0, 0)');
+    await randomDelay(500, 1000);
+  }
+
   private async findSubmitButton(page: Page): Promise<Locator | null> {
     const candidates = [
+      page.locator('#submit_app'),
       page.locator('input[type="submit"]'),
       page.locator('button[type="submit"]'),
-      page.locator('#submit_app'),
       page.locator('button:has-text("Submit Application")'),
       page.locator('button:has-text("Submit application")'),
       page.locator('button:has-text("Submit")'),
       page.locator('input[value*="Submit"]'),
+      page.locator('[data-action*="submit"]'),
+      page.locator('button[class*="submit"]'),
+      page.locator('a[class*="submit"]'),
     ];
 
     for (const loc of candidates) {
-      if ((await loc.count().catch(() => 0)) > 0) {
+      const count = await loc.count().catch(() => 0);
+      if (count > 0) {
+        log.info({ selector: loc.toString(), count }, 'Submit button found');
         return loc.first();
       }
     }
+
+    // Last resort: log what buttons exist on the page for debugging
+    const allButtons = await page.$$eval(
+      'button, input[type="submit"], [role="button"]',
+      (els) => els.map((e) => ({ tag: e.tagName, text: e.textContent?.trim().slice(0, 50), id: e.id, type: e.getAttribute('type') })),
+    ).catch(() => []);
+    log.warn({ allButtons }, 'No submit button matched — listing all buttons for debug');
+
     return null;
   }
 }
