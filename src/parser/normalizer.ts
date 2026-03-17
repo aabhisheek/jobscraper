@@ -3,6 +3,9 @@ import { ScraperError } from '../common/errors.js';
 import type { NormalizedJob } from '../common/types.js';
 import type { GreenhouseRawJob } from '../scrapers/greenhouse.js';
 import type { LeverRawJob } from '../scrapers/lever.js';
+import type { LinkedInRawJobData } from '../scrapers/linkedin.js';
+import type { WellfoundRawJobData } from '../scrapers/wellfound.js';
+import type { NaukriRawJobData } from '../scrapers/naukri.js';
 import { extractSkills } from './skill-extractor.js';
 
 const LOCATION_NORMALIZATIONS: Record<string, string> = {
@@ -14,6 +17,19 @@ const LOCATION_NORMALIZATIONS: Record<string, string> = {
   'los angeles': 'Los Angeles, CA',
   dc: 'Washington, DC',
   'washington dc': 'Washington, DC',
+  bengaluru: 'Bangalore, India',
+  bangalore: 'Bangalore, India',
+  mumbai: 'Mumbai, India',
+  bombay: 'Mumbai, India',
+  hyderabad: 'Hyderabad, India',
+  pune: 'Pune, India',
+  chennai: 'Chennai, India',
+  madras: 'Chennai, India',
+  gurgaon: 'Gurugram, India',
+  gurugram: 'Gurugram, India',
+  noida: 'Noida, India',
+  delhi: 'New Delhi, India',
+  'new delhi': 'New Delhi, India',
 };
 
 function normalizeLocation(raw: string): string {
@@ -108,5 +124,83 @@ export function normalizeLeverJob(
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return err(new ScraperError('PARSE_FAILED', 'lever', message));
+  }
+}
+
+export function normalizeLinkedInJob(raw: LinkedInRawJobData): Result<NormalizedJob, ScraperError> {
+  try {
+    const description = stripHtml(raw.description);
+    const skills = extractSkills(description + ' ' + raw.title);
+
+    return ok({
+      title: raw.title.trim(),
+      company: raw.company,
+      location: normalizeLocation(raw.location),
+      description,
+      skills,
+      experience: null,
+      salary: null,
+      applyLink: raw.jobUrl,
+      applyType: raw.isEasyApply ? 'linkedin_easy' : 'external',
+      source: 'linkedin',
+      sourceId: raw.linkedinJobId,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return err(new ScraperError('PARSE_FAILED', 'linkedin', message));
+  }
+}
+
+export function normalizeWellfoundJob(
+  raw: WellfoundRawJobData,
+): Result<NormalizedJob, ScraperError> {
+  try {
+    const description = stripHtml(raw.description);
+    const skills = extractSkills(description + ' ' + raw.title);
+
+    return ok({
+      title: raw.title.trim(),
+      company: raw.company,
+      location: normalizeLocation(raw.location),
+      description,
+      skills,
+      experience: null,
+      salary: raw.salary,
+      applyLink: raw.jobUrl,
+      applyType: 'external',
+      source: 'wellfound',
+      sourceId: raw.wellfoundJobId,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return err(new ScraperError('PARSE_FAILED', 'wellfound', message));
+  }
+}
+
+export function normalizeNaukriJob(raw: NaukriRawJobData): Result<NormalizedJob, ScraperError> {
+  try {
+    const description = stripHtml(raw.description);
+    const extractedSkills = extractSkills(description + ' ' + raw.title);
+
+    // Merge skills from card tags with extracted skills
+    const cardSkills = raw.skills.map((s) => s.toLowerCase().trim());
+    const allSkills = [...new Set([...extractedSkills, ...cardSkills])].sort();
+
+    return ok({
+      title: raw.title.trim(),
+      company: raw.company,
+      location: normalizeLocation(raw.location),
+      description,
+      skills: allSkills,
+      experience: raw.experience,
+      salary: raw.salary,
+      applyLink: raw.jobUrl,
+      applyType: 'external',
+      source: 'naukri',
+      sourceId: raw.naukriJobId,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return err(new ScraperError('PARSE_FAILED', 'naukri', message));
   }
 }

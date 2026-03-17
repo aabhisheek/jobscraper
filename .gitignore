@@ -29,6 +29,9 @@ Thumbs.db
 resume/*.pdf
 profile/profile.json
 
+# Auth cookies (contain session tokens)
+*-cookies.json
+
 # Logs
 *.log
 

@@ -12,6 +12,7 @@ const configSchema = z.object({
   rateLimitMs: z.coerce.number().int().positive().default(30000),
   port: z.coerce.number().int().positive().default(3000),
   host: z.string().default('0.0.0.0'),
+  linkedinCookiePath: z.string().optional(),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -30,6 +31,7 @@ export function loadConfig(): AppConfig {
     rateLimitMs: process.env['RATE_LIMIT_MS'],
     port: process.env['PORT'],
     host: process.env['HOST'],
+    linkedinCookiePath: process.env['LINKEDIN_COOKIE_PATH'],
   });
 
   if (!result.success) {

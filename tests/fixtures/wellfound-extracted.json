@@ -1,0 +1,29 @@
+[
+  {
+    "title": "Full Stack Engineer",
+    "company": "linear",
+    "location": "Remote",
+    "description": "Build the best project management tool. TypeScript, React, Node.js, PostgreSQL. We move fast.",
+    "salary": "$120k - $180k",
+    "jobUrl": "https://wellfound.com/company/linear/jobs/fs-engineer-1",
+    "wellfoundJobId": "fs-engineer-1"
+  },
+  {
+    "title": "Backend Developer",
+    "company": "linear",
+    "location": "San Francisco, CA",
+    "description": "Scale our backend with TypeScript and PostgreSQL. GraphQL API development. Redis caching.",
+    "salary": "$140k - $200k",
+    "jobUrl": "https://wellfound.com/company/linear/jobs/backend-dev-2",
+    "wellfoundJobId": "backend-dev-2"
+  },
+  {
+    "title": "DevOps Engineer",
+    "company": "linear",
+    "location": "Remote",
+    "description": "Manage our infrastructure on AWS. Terraform, Kubernetes, Docker. CI/CD pipelines.",
+    "salary": null,
+    "jobUrl": "https://wellfound.com/company/linear/jobs/devops-3",
+    "wellfoundJobId": "devops-3"
+  }
+]

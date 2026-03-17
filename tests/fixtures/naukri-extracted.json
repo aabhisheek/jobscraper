@@ -1,0 +1,35 @@
+[
+  {
+    "title": "Senior TypeScript Developer",
+    "company": "TCS",
+    "location": "Bangalore",
+    "description": "Looking for a senior TypeScript developer with React and Node.js experience. PostgreSQL and Redis knowledge preferred.",
+    "experience": "3-5 Yrs",
+    "salary": "12-18 Lacs PA",
+    "skills": ["typescript", "react", "node.js"],
+    "jobUrl": "https://www.naukri.com/job-listings-senior-typescript-developer-tcs-bangalore-100001",
+    "naukriJobId": "100001"
+  },
+  {
+    "title": "React Frontend Engineer",
+    "company": "Infosys",
+    "location": "Hyderabad",
+    "description": "Build modern web applications with React, TypeScript, and Tailwind CSS. Experience with REST APIs and GraphQL.",
+    "experience": "2-4 Yrs",
+    "salary": "8-14 Lacs PA",
+    "skills": ["react", "javascript", "css"],
+    "jobUrl": "https://www.naukri.com/job-listings-react-frontend-engineer-infosys-hyderabad-100002",
+    "naukriJobId": "100002"
+  },
+  {
+    "title": "Node.js Backend Developer",
+    "company": "Wipro",
+    "location": "Pune",
+    "description": "Develop backend services with Node.js and Express. MongoDB and PostgreSQL. Docker and AWS deployment.",
+    "experience": "1-3 Yrs",
+    "salary": null,
+    "skills": ["node.js", "express", "mongodb"],
+    "jobUrl": "https://www.naukri.com/job-listings-nodejs-backend-developer-wipro-pune-100003",
+    "naukriJobId": "100003"
+  }
+]

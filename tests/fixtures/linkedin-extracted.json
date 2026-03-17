@@ -1,0 +1,29 @@
+[
+  {
+    "title": "Senior Backend Engineer",
+    "company": "stripe",
+    "location": "San Francisco, CA",
+    "description": "Build payment infrastructure with TypeScript, Node.js, and PostgreSQL. Experience with Docker and Kubernetes preferred.",
+    "jobUrl": "https://www.linkedin.com/jobs/view/111111",
+    "linkedinJobId": "111111",
+    "isEasyApply": true
+  },
+  {
+    "title": "Frontend Engineer",
+    "company": "stripe",
+    "location": "Remote",
+    "description": "Join our frontend team building with React and TypeScript. Strong CSS and HTML skills required.",
+    "jobUrl": "https://www.linkedin.com/jobs/view/222222",
+    "linkedinJobId": "222222",
+    "isEasyApply": false
+  },
+  {
+    "title": "Platform Engineer",
+    "company": "stripe",
+    "location": "New York, NY",
+    "description": "Work on our core platform with Go, AWS, and Terraform. Experience with CI/CD and Kubernetes.",
+    "jobUrl": "https://www.linkedin.com/jobs/view/333333",
+    "linkedinJobId": "333333",
+    "isEasyApply": true
+  }
+]

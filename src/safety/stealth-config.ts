@@ -16,7 +16,7 @@ const VIEWPORTS = [
   { width: 1280, height: 720 },
 ];
 
-const LOCALES = ['en-US', 'en-GB', 'en-CA', 'en-AU'];
+const LOCALES = ['en-US', 'en-GB', 'en-CA', 'en-AU', 'en-IN'];
 
 const TIMEZONES = [
   'America/New_York',
@@ -24,6 +24,7 @@ const TIMEZONES = [
   'America/Denver',
   'America/Los_Angeles',
   'America/Toronto',
+  'Asia/Kolkata',
 ];
 
 function pickRandom<T>(arr: readonly T[]): T {

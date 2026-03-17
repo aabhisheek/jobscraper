@@ -4,6 +4,7 @@ export const SCRAPER_ERROR_CODES = [
   'RATE_LIMITED',
   'NETWORK_ERROR',
   'PARSE_FAILED',
+  'AUTH_WALL',
 ] as const;
 export type ScraperErrorCode = (typeof SCRAPER_ERROR_CODES)[number];
 

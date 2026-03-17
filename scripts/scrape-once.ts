@@ -1,9 +1,24 @@
 import { GreenhouseScraper } from '../src/scrapers/greenhouse.js';
 import { LeverScraper } from '../src/scrapers/lever.js';
-import { normalizeGreenhouseJob, normalizeLeverJob } from '../src/parser/normalizer.js';
+import { LinkedInScraper } from '../src/scrapers/linkedin.js';
+import { WellfoundScraper } from '../src/scrapers/wellfound.js';
+import { NaukriScraper } from '../src/scrapers/naukri.js';
+import {
+  normalizeGreenhouseJob,
+  normalizeLeverJob,
+  normalizeLinkedInJob,
+  normalizeWellfoundJob,
+  normalizeNaukriJob,
+} from '../src/parser/normalizer.js';
 import { JobRepository } from '../src/database/job-repository.js';
 import { getPrismaClient, disconnectPrisma } from '../src/database/client.js';
-import { GREENHOUSE_COMPANIES, LEVER_COMPANIES } from '../src/scrapers/company-list.js';
+import {
+  GREENHOUSE_COMPANIES,
+  LEVER_COMPANIES,
+  LINKEDIN_COMPANIES,
+  WELLFOUND_COMPANIES,
+  NAUKRI_KEYWORDS,
+} from '../src/scrapers/company-list.js';
 import type { RawJob } from '../src/scrapers/scraper.interface.js';
 import type { NormalizedJob, JobSource } from '../src/common/types.js';
 import { createChildLogger } from '../src/common/logger.js';
@@ -52,6 +67,33 @@ async function main() {
       process.exit(1);
     }
     rawJobs = result.value;
+  } else if (source === 'linkedin') {
+    const scraper = new LinkedInScraper();
+    const companies = company ? [company] : [...LINKEDIN_COMPANIES];
+    const result = await scraper.scrape({ source: 'linkedin', companies });
+    if (result.isErr()) {
+      log.error({ error: result.error.message }, 'Scrape failed');
+      process.exit(1);
+    }
+    rawJobs = result.value;
+  } else if (source === 'wellfound') {
+    const scraper = new WellfoundScraper();
+    const companies = company ? [company] : [...WELLFOUND_COMPANIES];
+    const result = await scraper.scrape({ source: 'wellfound', companies });
+    if (result.isErr()) {
+      log.error({ error: result.error.message }, 'Scrape failed');
+      process.exit(1);
+    }
+    rawJobs = result.value;
+  } else if (source === 'naukri') {
+    const scraper = new NaukriScraper();
+    const keywords = company ? [company] : [...NAUKRI_KEYWORDS];
+    const result = await scraper.scrape({ source: 'naukri', companies: keywords });
+    if (result.isErr()) {
+      log.error({ error: result.error.message }, 'Scrape failed');
+      process.exit(1);
+    }
+    rawJobs = result.value;
   } else {
     log.error({ source }, 'Unsupported source');
     process.exit(1);
@@ -65,8 +107,14 @@ async function main() {
     let result;
     if (source === 'greenhouse') {
       result = normalizeGreenhouseJob(data as Parameters<typeof normalizeGreenhouseJob>[0]);
-    } else {
+    } else if (source === 'lever') {
       result = normalizeLeverJob(data as Parameters<typeof normalizeLeverJob>[0]);
+    } else if (source === 'linkedin') {
+      result = normalizeLinkedInJob(data as Parameters<typeof normalizeLinkedInJob>[0]);
+    } else if (source === 'wellfound') {
+      result = normalizeWellfoundJob(data as Parameters<typeof normalizeWellfoundJob>[0]);
+    } else {
+      result = normalizeNaukriJob(data as Parameters<typeof normalizeNaukriJob>[0]);
     }
 
     if (result.isOk()) {
