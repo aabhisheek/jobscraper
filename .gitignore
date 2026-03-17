@@ -32,6 +32,13 @@ profile/profile.json
 # Auth cookies (contain session tokens)
 *-cookies.json
 
+# Screenshots (may contain personal data from filled forms)
+screenshots/
+
+# Debug artifacts
+debug-*.html
+debug-*.png
+
 # Logs
 *.log
 

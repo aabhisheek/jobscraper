@@ -1,9 +1,9 @@
-import type { Page } from 'playwright';
+import type { Page, Locator } from 'playwright';
 import { ok, err, type Result } from 'neverthrow';
 import { ApplyError } from '../common/errors.js';
 import type { Profile } from '../common/types.js';
-import type { ApplyBot, ApplyResult } from './apply.interface.js';
-import { humanType, humanClick, randomDelay, scrollSlowly } from '../safety/human-behavior.js';
+import type { ApplyBot, ApplyOptions, ApplyResult } from './apply.interface.js';
+import { randomDelay, scrollSlowly } from '../safety/human-behavior.js';
 import { createChildLogger } from '../common/logger.js';
 
 const log = createChildLogger('apply-greenhouse');
@@ -15,56 +15,108 @@ export class GreenhouseApplyBot implements ApplyBot {
     applyLink: string,
     profile: Profile,
     page: Page,
+    options?: ApplyOptions,
   ): Promise<Result<ApplyResult, ApplyError>> {
     log.info({ applyLink }, 'Starting Greenhouse application');
 
     try {
-      await page.goto(applyLink, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      // Rewrite company career page URLs to direct Greenhouse form
+      const directUrl = this.toDirectGreenhouseUrl(applyLink);
+      log.info({ directUrl }, 'Navigating to application form');
+
+      await page.goto(directUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await randomDelay(2000, 4000);
 
-      // Check if application form exists
-      const form = await page.$('#application_form, form[action*="applications"]');
-      if (!form) {
+      // Detect form — broad selectors, page.$() with catch (proven to work)
+      const FORM_SELECTORS = [
+        '#application_form',
+        'form[action*="applications"]',
+        'form[data-controller*="application"]',
+        '[class*="application"]',
+      ];
+
+      let formFound = false;
+      for (const sel of FORM_SELECTORS) {
+        const el = await page.$(sel).catch(() => null);
+        if (el) {
+          formFound = true;
+          log.info({ selector: sel }, 'Form detected');
+          break;
+        }
+      }
+
+      // If no form yet, try clicking an Apply button
+      if (!formFound) {
+        const applyButton = await page
+          .$(
+            'a[href*="greenhouse"], a[href*="apply"], button:has-text("Apply"), a:has-text("Apply")',
+          )
+          .catch(() => null);
+        if (applyButton) {
+          await applyButton.click();
+          await randomDelay(2000, 4000);
+          for (const sel of FORM_SELECTORS) {
+            const el = await page.$(sel).catch(() => null);
+            if (el) {
+              formFound = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!formFound) {
         return err(new ApplyError('FORM_NOT_FOUND', 'greenhouse', 'No application form found'));
       }
 
       await scrollSlowly(page);
 
       // Fill basic fields
-      await this.fillField(page, '#first_name', profile.name.split(' ')[0] ?? '');
-      await this.fillField(page, '#last_name', profile.name.split(' ').slice(1).join(' '));
-      await this.fillField(page, '#email', profile.email);
-      await this.fillField(page, '#phone', profile.phone);
+      const firstName = profile.name.split(' ')[0] ?? '';
+      const lastName = profile.name.split(' ').slice(1).join(' ');
 
-      // Fill LinkedIn and other URLs if fields exist
-      await this.fillFieldIfExists(
-        page,
-        '[id*="linkedin"], [name*="linkedin"]',
-        profile.linkedinUrl,
-      );
-      await this.fillFieldIfExists(page, '[id*="github"], [name*="github"]', profile.githubUrl);
-      await this.fillFieldIfExists(
-        page,
-        '[id*="portfolio"], [id*="website"], [name*="website"]',
-        profile.portfolioUrl,
-      );
+      await this.fillByLabel(page, 'First Name', firstName);
+      await this.fillByLabel(page, 'Last Name', lastName);
+      await this.fillByLabel(page, 'Email', profile.email);
+      await this.fillByLabel(page, 'Phone', profile.phone);
+      await this.fillByLabel(page, 'LinkedIn', profile.linkedinUrl);
+      await this.fillByLabel(page, 'GitHub', profile.githubUrl);
+      await this.fillByLabel(page, 'Portfolio', profile.portfolioUrl);
+      await this.fillByLabel(page, 'Website', profile.portfolioUrl);
 
-      // Upload resume if file input exists
-      const resumeInput = await page.$('input[type="file"]');
-      if (resumeInput && profile.resumePath) {
-        await resumeInput.setInputFiles(profile.resumePath);
-        await randomDelay(1000, 2000);
+      // Upload resume
+      if (profile.resumePath) {
+        const resumeInput = await page
+          .$(
+            'input[type="file"][id*="resume"], input[type="file"][name*="resume"], input[type="file"]',
+          )
+          .catch(() => null);
+        if (resumeInput) {
+          await resumeInput.setInputFiles(profile.resumePath);
+          log.info('Resume uploaded');
+          await randomDelay(1000, 2000);
+        }
       }
 
       await randomDelay(2000, 5000);
 
-      // Submit the form
-      const submitButton = await page.$('input[type="submit"], button[type="submit"], #submit_app');
-      if (!submitButton) {
+      // Scroll down to reveal submit button
+      await scrollSlowly(page, 800);
+      await randomDelay(1000, 2000);
+
+      // Find submit button
+      const submitLocator = await this.findSubmitButton(page);
+      if (!submitLocator) {
         return err(new ApplyError('SUBMIT_FAILED', 'greenhouse', 'No submit button found'));
       }
 
-      await humanClick(page, 'input[type="submit"], button[type="submit"], #submit_app');
+      if (options?.dryRun) {
+        log.info({ applyLink }, 'DRY RUN: form filled but not submitted');
+        return ok({ success: true, message: 'DRY RUN: form filled but not submitted' });
+      }
+
+      await submitLocator.scrollIntoViewIfNeeded();
+      await submitLocator.click();
       await randomDelay(3000, 5000);
 
       log.info({ applyLink }, 'Greenhouse application submitted');
@@ -76,19 +128,79 @@ export class GreenhouseApplyBot implements ApplyBot {
     }
   }
 
-  private async fillField(page: Page, selector: string, value: string): Promise<void> {
-    const field = await page.$(selector);
-    if (field) {
-      await humanType(page, selector, value);
-      await randomDelay(300, 800);
+  private toDirectGreenhouseUrl(url: string): string {
+    const ghJidMatch = url.match(/[?&]gh_jid=(\d+)/);
+    if (ghJidMatch) {
+      const parsed = new URL(url);
+      const companySlug = parsed.hostname.replace('.com', '').replace('www.', '');
+      return `https://boards.greenhouse.io/${companySlug}/jobs/${ghJidMatch[1]}#app`;
     }
+
+    if (url.includes('boards.greenhouse.io') && !url.includes('#app')) {
+      return `${url}#app`;
+    }
+
+    return url;
   }
 
-  private async fillFieldIfExists(page: Page, selector: string, value: string): Promise<void> {
-    const field = await page.$(selector);
-    if (field) {
-      await humanType(page, selector, value);
-      await randomDelay(300, 800);
+  private async fillByLabel(page: Page, labelText: string, value: string): Promise<void> {
+    if (!value) return;
+
+    // Strategy 1: Playwright getByLabel (handles label[for] + aria-label)
+    try {
+      const field = page.getByLabel(labelText, { exact: false }).first();
+      if ((await field.count()) > 0) {
+        await field.click();
+        await field.fill(value);
+        log.info({ labelText }, 'Filled field via getByLabel');
+        await randomDelay(300, 800);
+        return;
+      }
+    } catch {
+      // Fall through
     }
+
+    // Strategy 2: id/name/placeholder containing the label slug
+    const slug = labelText.toLowerCase().replace(/\s+/g, '_');
+    const selectors = [
+      `#${slug}`,
+      `input[name*="${slug}"]`,
+      `input[autocomplete*="${slug}"]`,
+      `input[id*="${slug}"]`,
+      `input[placeholder*="${labelText}"]`,
+      `textarea[name*="${slug}"]`,
+    ];
+
+    for (const sel of selectors) {
+      const el = await page.$(sel).catch(() => null);
+      if (el) {
+        await el.click();
+        await el.fill(value);
+        log.info({ labelText, selector: sel }, 'Filled field via selector');
+        await randomDelay(300, 800);
+        return;
+      }
+    }
+
+    log.debug({ labelText }, 'Field not found — skipping');
+  }
+
+  private async findSubmitButton(page: Page): Promise<Locator | null> {
+    const candidates = [
+      page.locator('input[type="submit"]'),
+      page.locator('button[type="submit"]'),
+      page.locator('#submit_app'),
+      page.locator('button:has-text("Submit Application")'),
+      page.locator('button:has-text("Submit application")'),
+      page.locator('button:has-text("Submit")'),
+      page.locator('input[value*="Submit"]'),
+    ];
+
+    for (const loc of candidates) {
+      if ((await loc.count().catch(() => 0)) > 0) {
+        return loc.first();
+      }
+    }
+    return null;
   }
 }

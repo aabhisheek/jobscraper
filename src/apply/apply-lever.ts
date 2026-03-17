@@ -2,7 +2,7 @@ import type { Page } from 'playwright';
 import { ok, err, type Result } from 'neverthrow';
 import { ApplyError } from '../common/errors.js';
 import type { Profile } from '../common/types.js';
-import type { ApplyBot, ApplyResult } from './apply.interface.js';
+import type { ApplyBot, ApplyOptions, ApplyResult } from './apply.interface.js';
 import { humanType, humanClick, randomDelay, scrollSlowly } from '../safety/human-behavior.js';
 import { createChildLogger } from '../common/logger.js';
 
@@ -15,6 +15,7 @@ export class LeverApplyBot implements ApplyBot {
     applyLink: string,
     profile: Profile,
     page: Page,
+    options?: ApplyOptions,
   ): Promise<Result<ApplyResult, ApplyError>> {
     log.info({ applyLink }, 'Starting Lever application');
 
@@ -65,6 +66,11 @@ export class LeverApplyBot implements ApplyBot {
       const submitButton = await page.$('button[type="submit"], .postings-btn-submit');
       if (!submitButton) {
         return err(new ApplyError('SUBMIT_FAILED', 'lever', 'No submit button found'));
+      }
+
+      if (options?.dryRun) {
+        log.info({ applyLink }, 'DRY RUN: form filled but not submitted');
+        return ok({ success: true, message: 'DRY RUN: form filled but not submitted' });
       }
 
       await humanClick(page, 'button[type="submit"], .postings-btn-submit');

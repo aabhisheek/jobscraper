@@ -1,11 +1,14 @@
-import { chromium, type Browser, type Page, type Cookie } from 'playwright';
+import { chromium, type Browser, type Page, type Cookie, type LaunchOptions } from 'playwright';
 import { getStealthLaunchOptions, getStealthContextOptions } from '../safety/stealth-config.js';
 import { createChildLogger } from '../common/logger.js';
 
 const log = createChildLogger('browser-helpers');
 
-export async function withBrowser<T>(fn: (browser: Browser) => Promise<T>): Promise<T> {
-  const browser = await chromium.launch(getStealthLaunchOptions());
+export async function withBrowser<T>(
+  fn: (browser: Browser) => Promise<T>,
+  launchOverrides?: Partial<LaunchOptions>,
+): Promise<T> {
+  const browser = await chromium.launch({ ...getStealthLaunchOptions(), ...launchOverrides });
   try {
     return await fn(browser);
   } finally {
